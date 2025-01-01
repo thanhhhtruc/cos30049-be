@@ -19,8 +19,3 @@ export class UserDto
 export class CreateUserInput extends createZodDto(CreateUserSchema) {}
 
 export class UpdateUserInput extends createZodDto(UpdateUserSchema) {}
-
-export class TestInput {
-  name: string;
-  age: number;
-}
