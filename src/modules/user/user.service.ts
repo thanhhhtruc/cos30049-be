@@ -29,11 +29,12 @@ export class UserService {
       throw new BadRequestException();
     }
 
-    // Build the query
     const query = e.select(e.User, () => ({
       ...e.User['*'],
       ...(includeCredentials ? { password: true, refreshToken: true } : {}),
-      filter_single: id ? { id } : { email: email! },
+      filter_single: id
+        ? { id }
+        : { normalizedEmail: normalizeEmail(email!) || email! },
     }));
 
     const user = await this.edgedb.query(query);
@@ -44,27 +45,25 @@ export class UserService {
   async createUser(input: CreateUserInput): Promise<UserDto> {
     const { email, password } = input;
 
-    // Select all info from the newly inserted User
-    const query = e.select(
-      e
-        .insert(e.User, {
-          email,
-          password: await hash(password, BCRYPT_SALT_ROUNDS),
-          normalizedEmail: normalizeEmail(email) || email,
-          // If another user with the same normalize email already exists, return null
-        })
-        .unlessConflict((user) => ({
-          on: user.normalizedEmail,
-        })),
-      () => {
-        return {
-          ...e.User['*'],
-          password: false,
-        };
-      },
-    );
+    const insertUserQuery = e
+      .insert(e.User, {
+        ...input,
+        email,
+        password: await hash(password, BCRYPT_SALT_ROUNDS),
+        normalizedEmail: normalizeEmail(email) || email,
+        // If another user with the same normalize email already exists, return null
+      })
+      .unlessConflict((user) => ({
+        on: user.normalizedEmail,
+      }));
 
-    const user = await this.edgedb.query(query);
+    // Select all info from the newly inserted User
+    const query = e.select(insertUserQuery, () => ({
+      ...e.User['*'],
+      password: false,
+    }));
+
+    const user: UserDto | null = await this.edgedb.query(query);
 
     if (!user) {
       throw new BadRequestException('User could not be created');
@@ -80,18 +79,15 @@ export class UserService {
     id: string;
     updates: UpdateUserInput;
   }): Promise<UserDto | null> {
-    const query = e.select(
-      e.update(e.User, () => ({
-        filter_single: { id },
-        set: updates,
-      })),
-      () => {
-        return {
-          ...e.User['*'],
-          password: false,
-        };
-      },
-    );
+    const updateUserQuery = e.update(e.User, () => ({
+      filter_single: { id },
+      set: updates,
+    }));
+
+    const query = e.select(updateUserQuery, () => ({
+      ...e.User['*'],
+      password: false,
+    }));
 
     const user = await this.edgedb.query(query);
 

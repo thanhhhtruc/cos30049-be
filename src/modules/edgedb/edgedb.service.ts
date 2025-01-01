@@ -1,7 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { $infer, createClient } from 'dbschema/edgeql-js';
-import * as T from 'dbschema/edgeql-js/typesystem';
-import e from 'dbschema/edgeql-js';
+import { $infer, createClient } from '@dbschema/edgeql-js';
+import * as T from '@dbschema/edgeql-js/typesystem';
+import e from '@dbschema/edgeql-js';
 
 export default e;
 

@@ -14,7 +14,7 @@ export type $CryptoExchangeRateλShape = $.typeutil.flatten<_std.$Object_8ce8c71
 type $CryptoExchangeRate = $.ObjectType<"default::CryptoExchangeRate", $CryptoExchangeRateλShape, null, [
   ..._std.$Object_8ce8c71ee4fa5f73840c22d7eaa58588['__exclusives__'],
 ]>;
-const $CryptoExchangeRate = $.makeType<$CryptoExchangeRate>(_.spec, "9e98c7ec-c5e9-11ef-98ab-0194a86573b5", _.syntax.literal);
+const $CryptoExchangeRate = $.makeType<$CryptoExchangeRate>(_.spec, "387ffa78-c802-11ef-b556-dddd36eadc66", _.syntax.literal);
 
 const CryptoExchangeRate: $.$expr_PathNode<$.TypeSet<$CryptoExchangeRate, $.Cardinality.Many>, null> = _.syntax.$PathNode($.$toSet($CryptoExchangeRate, $.Cardinality.Many), null);
 
@@ -34,7 +34,7 @@ export type $CurrencyλShape = $.typeutil.flatten<_std.$Object_8ce8c71ee4fa5f738
 type $Currency = $.ObjectType<"default::Currency", $CurrencyλShape, null, [
   ..._std.$Object_8ce8c71ee4fa5f73840c22d7eaa58588['__exclusives__'],
 ]>;
-const $Currency = $.makeType<$Currency>(_.spec, "9e99f39c-c5e9-11ef-a621-775945359cb3", _.syntax.literal);
+const $Currency = $.makeType<$Currency>(_.spec, "3880f9be-c802-11ef-be2d-4dc93d2713d8", _.syntax.literal);
 
 const Currency: $.$expr_PathNode<$.TypeSet<$Currency, $.Cardinality.Many>, null> = _.syntax.$PathNode($.$toSet($Currency, $.Cardinality.Many), null);
 
@@ -50,7 +50,7 @@ export type $TransactionλShape = $.typeutil.flatten<_std.$Object_8ce8c71ee4fa5f
 type $Transaction = $.ObjectType<"default::Transaction", $TransactionλShape, null, [
   ..._std.$Object_8ce8c71ee4fa5f73840c22d7eaa58588['__exclusives__'],
 ]>;
-const $Transaction = $.makeType<$Transaction>(_.spec, "9e9d096a-c5e9-11ef-972b-5d61922a5e8e", _.syntax.literal);
+const $Transaction = $.makeType<$Transaction>(_.spec, "38875886-c802-11ef-84ae-8f1d951906e7", _.syntax.literal);
 
 const Transaction: $.$expr_PathNode<$.TypeSet<$Transaction, $.Cardinality.Many>, null> = _.syntax.$PathNode($.$toSet($Transaction, $.Cardinality.Many), null);
 
@@ -71,10 +71,10 @@ export type $UserλShape = $.typeutil.flatten<_std.$Object_8ce8c71ee4fa5f73840c2
 }>;
 type $User = $.ObjectType<"default::User", $UserλShape, null, [
   ..._std.$Object_8ce8c71ee4fa5f73840c22d7eaa58588['__exclusives__'],
-  {email: {__element__: _std.$str, __cardinality__: $.Cardinality.One | $.Cardinality.AtMostOne },},
   {normalizedEmail: {__element__: _std.$str, __cardinality__: $.Cardinality.One | $.Cardinality.AtMostOne },},
+  {email: {__element__: _std.$str, __cardinality__: $.Cardinality.One | $.Cardinality.AtMostOne },},
 ]>;
-const $User = $.makeType<$User>(_.spec, "9ea25b22-c5e9-11ef-8e24-a55d11c659a9", _.syntax.literal);
+const $User = $.makeType<$User>(_.spec, "388adef2-c802-11ef-93e9-7f79fb0a273d", _.syntax.literal);
 
 const User: $.$expr_PathNode<$.TypeSet<$User, $.Cardinality.Many>, null> = _.syntax.$PathNode($.$toSet($User, $.Cardinality.Many), null);
 
@@ -100,7 +100,7 @@ export type $WalletλShape = $.typeutil.flatten<_std.$Object_8ce8c71ee4fa5f73840
 type $Wallet = $.ObjectType<"default::Wallet", $WalletλShape, null, [
   ..._std.$Object_8ce8c71ee4fa5f73840c22d7eaa58588['__exclusives__'],
 ]>;
-const $Wallet = $.makeType<$Wallet>(_.spec, "9e9e8268-c5e9-11ef-b669-7b9eb92dce98", _.syntax.literal);
+const $Wallet = $.makeType<$Wallet>(_.spec, "38887a72-c802-11ef-88b9-19d7b628fb06", _.syntax.literal);
 
 const Wallet: $.$expr_PathNode<$.TypeSet<$Wallet, $.Cardinality.Many>, null> = _.syntax.$PathNode($.$toSet($Wallet, $.Cardinality.Many), null);
 
