@@ -1,5 +1,5 @@
 import e from '@dbschema/edgeql-js';
-import { CreateUserInput, UserDto } from 'src/modules/user/user.dto';
+import { CreateUserInput } from 'src/modules/user/user.dto';
 import { faker } from '@faker-js/faker';
 import { client } from './seeder';
 import { hash } from 'bcrypt';
@@ -20,7 +20,7 @@ const getDummyUser = async (): Promise<Required<CreateUserInput>> => {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const seedUsers = async (count: number = 10): Promise<UserDto[]> => {
+export const seedUsers = async (count: number = 10) => {
   console.log(`👤 Seeding ${count} users...`);
 
   const queries = await map(Array.from({ length: count }), async () => {
@@ -35,21 +35,14 @@ export const seedUsers = async (count: number = 10): Promise<UserDto[]> => {
         on: user.normalizedEmail,
       }));
 
-    return e
-      .select(insertUserQuery, () => ({
-        ...e.User['*'],
-        password: false,
-      }))
-      .toEdgeQL();
+    return insertUserQuery.toEdgeQL();
   });
 
-  const result = await client.transaction(async (tx) => {
+  await client.transaction(async (tx) => {
     return await mapSeries(queries, async (query) => {
-      const queriedUser = await tx.querySingle(query);
-      return queriedUser as UserDto;
+      await tx.querySingle(query);
     });
   });
 
   console.log('👤 Users seeded!');
-  return result;
 };

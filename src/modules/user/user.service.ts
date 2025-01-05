@@ -60,7 +60,6 @@ export class UserService {
     // Select all info from the newly inserted User
     const query = e.select(insertUserQuery, () => ({
       ...e.User['*'],
-      password: false,
     }));
 
     const user: UserDto | null = await this.edgedb.query(query);
