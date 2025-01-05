@@ -6,6 +6,8 @@ import { map } from 'bluebird';
 export const seedTransactions = async (count: number = 1000) => {
   console.log(`💸 Seeding transactions...`);
 
+  // .map can cause errors since transactions run concurrently and they are interdependent
+  // can use .mapSeries to run them sequentially, but it will be slower
   await map(new Array(count).fill(null), async () => {
     await seedTransaction();
   });
@@ -32,19 +34,26 @@ const seedTransaction = async () => {
     return;
   }
 
-  console.log('sourceWallet', sourceWallet.id);
-
   const destinationWallet = await e
-    .select(e.Wallet, (wallet) => ({
-      ...e.Wallet['*'],
-      currency: {
-        id: true,
-        symbol: true,
-      },
-      limit: 1,
-      order_by: e.random(),
-      filter: e.op(wallet.id, '!=', e.uuid(sourceWallet.id)),
-    }))
+    .select(e.Wallet, (wallet) => {
+      const isNotSourceWallet = e.op(wallet.id, '!=', e.uuid(sourceWallet.id));
+      const isSameCurrency = e.op(
+        wallet.currency.id,
+        '=',
+        e.uuid(sourceWallet.currency.id),
+      );
+
+      return {
+        ...e.Wallet['*'],
+        currency: {
+          id: true,
+          symbol: true,
+        },
+        limit: 1,
+        order_by: e.random(),
+        filter: e.op(isNotSourceWallet, 'and', isSameCurrency),
+      };
+    })
     .assert_single()
     .run(client);
 
@@ -52,8 +61,6 @@ const seedTransaction = async () => {
     console.error('No wallet found. Please seed wallets first.');
     return;
   }
-
-  console.log('destinationWallet', destinationWallet.id);
 
   const transactedAmount = randomNumber(0, sourceWallet.balance);
 
@@ -92,7 +99,7 @@ const seedTransaction = async () => {
 
   await client.transaction(async (tx) => {
     await tx.querySingle(transaction.toEdgeQL());
-    await tx.querySingle(updateSrcWallet.toEdgeQL());
-    await tx.querySingle(updateDstWallet.toEdgeQL());
+    // await tx.querySingle(updateSrcWallet.toEdgeQL());
+    // await tx.querySingle(updateDstWallet.toEdgeQL());
   });
 };

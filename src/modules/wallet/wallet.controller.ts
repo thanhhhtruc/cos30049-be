@@ -40,8 +40,27 @@ export class WalletController {
     type?: TransactionType,
   ) {
     return this.transactionService.getWalletTransactions({
-      walletId: address,
+      address,
       type,
     });
+  }
+
+  @Get(':address/neighbors')
+  // Adding ApiQuery due to this issue: https://github.com/nestjs/swagger/issues/30
+  @ApiQuery({ name: 'type', enum: TransactionType, required: false })
+  @ApiGetResponse(
+    [WalletDto],
+    'Get all wallets that have transactions with the input wallet',
+  )
+  @ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ApiOperation({
+    summary: 'Get all wallets that have transactions with the input wallet',
+  })
+  async getWalletNeighbors(
+    @Param('address') address: string,
+    @Query('type')
+    type?: TransactionType,
+  ) {
+    return this.walletService.getWalletNeighbors({ address, type });
   }
 }

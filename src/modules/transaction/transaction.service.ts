@@ -7,15 +7,15 @@ export class TransactionService {
   constructor(private edgeDBService: EdgeDBService) {}
 
   async getWalletTransactions({
-    walletId,
+    address,
     type = TransactionType.ALL,
   }: {
-    walletId: string;
+    address: string;
     type?: TransactionType;
   }): Promise<TransactionDto[]> {
     const walletQuery = e.select(e.Wallet, () => ({
       ...e.Wallet['*'],
-      filter_single: { address: walletId },
+      filter_single: { address },
     }));
 
     const transactionsQuery = e.select(e.Transaction, (transaction) => {

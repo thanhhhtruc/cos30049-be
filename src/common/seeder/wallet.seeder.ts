@@ -6,7 +6,9 @@ import { WalletType } from '@dbschema/edgeql-js/modules/default';
 
 export const seedWallets = async (
   maxBalance: number = 1000,
-  maxWalletsPerCurrency = 100,
+  // Minimum 2 wallets per currency
+  // to ensure that we have enough wallets to transact between them
+  maxWalletsPerCurrency = 3,
 ) => {
   const cryptoCurrencies = await e
     .select(e.Currency, () => ({
