@@ -6,5 +6,5 @@ export class WalletDto {
   type: string;
 
   balance: number;
-  currency: CurrencyDto;
+  currency?: CurrencyDto;
 }

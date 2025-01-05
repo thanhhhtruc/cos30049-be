@@ -8,9 +8,17 @@ export class TransactionDto {
 
   hash: string;
 
-  baseWallet: WalletDto;
+  createdAt: Date;
 
-  destinationWallet: WalletDto;
+  baseWallet?: WalletDto;
 
-  currency: CurrencyDto;
+  destinationWallet?: WalletDto;
+
+  currency?: CurrencyDto;
+}
+
+export enum TransactionType {
+  INCOMING = 'INCOMING',
+  OUTGOING = 'OUTGOING',
+  ALL = 'ALL',
 }

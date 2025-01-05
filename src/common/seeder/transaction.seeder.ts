@@ -3,7 +3,7 @@ import { client } from '../seeder/seeder';
 import { generateTransactionHash, randomNumber } from './seeder.util';
 import { map } from 'bluebird';
 
-export const seedTransactions = async (count: number = 10000) => {
+export const seedTransactions = async (count: number = 1000) => {
   console.log(`💸 Seeding transactions...`);
 
   await map(new Array(count).fill(null), async () => {
@@ -32,6 +32,8 @@ const seedTransaction = async () => {
     return;
   }
 
+  console.log('sourceWallet', sourceWallet.id);
+
   const destinationWallet = await e
     .select(e.Wallet, (wallet) => ({
       ...e.Wallet['*'],
@@ -50,6 +52,8 @@ const seedTransaction = async () => {
     console.error('No wallet found. Please seed wallets first.');
     return;
   }
+
+  console.log('destinationWallet', destinationWallet.id);
 
   const transactedAmount = randomNumber(0, sourceWallet.balance);
 

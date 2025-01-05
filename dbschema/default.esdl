@@ -65,21 +65,5 @@ module default {
 
     required sourceWallet: Wallet;
     required destinationWallet: Wallet;
-
-
-    # trigger wallet_update after insert for each do (
-      
-    #   update Wallet
-    #   filter .id = __new__.sourceWallet.id
-    #   set {
-    #     balance := Wallet.balance - __new__.amount
-    #   }
-
-    #   update Wallet 
-    #   filter .id = __new__.destinationWallet.id
-    #   set {
-    #     balance := Wallet.balance + __new__.amount
-    #   }
-    # );
   }
 }

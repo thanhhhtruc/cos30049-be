@@ -7,8 +7,16 @@ import { APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { EdgeDBModule } from './edgedb/edgedb.module';
 import { AuthModule } from './auth/auth.module';
+import { WalletModule } from './wallet/wallet.module';
+import { TransactionModule } from './transaction/transaction.module';
 
-const FEATURE_MODULES = [UserModule, EdgeDBModule, AuthModule];
+const FEATURE_MODULES = [
+  UserModule,
+  EdgeDBModule,
+  AuthModule,
+  WalletModule,
+  TransactionModule,
+];
 const SHARED_MODULES = [
   ConfigModule.forRoot({
     isGlobal: true,

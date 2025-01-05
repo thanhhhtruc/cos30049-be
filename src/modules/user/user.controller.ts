@@ -1,8 +1,11 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, HttpStatus, Post } from '@nestjs/common';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { UserService } from './user.service';
 import { CreateUserInput, UserDto } from './user.dto';
-import { ApiPostResponse } from 'src/common/decorators/api-response.decorator';
+import {
+  ApiErrorResponse,
+  ApiPostResponse,
+} from 'src/common/decorators/api-response.decorator';
 
 @ApiTags('Users')
 @Controller('users')
@@ -12,6 +15,7 @@ export class UserController {
   @Post()
   @ApiPostResponse(UserDto, 'User created')
   @ApiOperation({ summary: 'Create user' })
+  @ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR)
   async createUser(@Body() input: CreateUserInput) {
     return this.userService.createUser(input);
   }

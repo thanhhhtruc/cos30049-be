@@ -18,7 +18,7 @@ import { ResponseMessage } from './response-message.decorators';
  */
 export function ApiErrorResponse(
   statusCode: HttpStatus,
-  message: string,
+  message?: string,
   cause?: string,
 ) {
   return applyDecorators(
@@ -45,22 +45,32 @@ export function ApiErrorResponse(
  * @param model
  * @param message
  * @returns
- */
+//  */
+
 export const ApiPostResponse = <TModel extends Type<any>>(
-  model: TModel,
+  model: TModel | TModel[],
   message: string,
 ) => {
   return applyDecorators(
     ResponseMessage(message),
-    ApiExtraModels(model),
+    ...(Array.isArray(model)
+      ? [ApiExtraModels(...model)]
+      : [ApiExtraModels(model)]),
     ApiCreatedResponse({
       schema: {
         properties: {
           message: { type: 'string' },
           statusCode: { type: 'number', default: HttpStatus.CREATED },
-          data: {
-            $ref: getSchemaPath(model),
-          },
+          data: Array.isArray(model)
+            ? {
+                type: 'array',
+                items: {
+                  $ref: getSchemaPath(model[0]),
+                },
+              }
+            : {
+                $ref: getSchemaPath(model),
+              },
         },
       },
     }),
@@ -73,20 +83,29 @@ export const ApiPostResponse = <TModel extends Type<any>>(
  * @returns
  * */
 export const ApiPutResponse = <TModel extends Type<any>>(
-  model: TModel,
+  model: TModel | TModel[],
   message: string,
 ) => {
   return applyDecorators(
     ResponseMessage(message),
-    ApiExtraModels(model),
+    ...(Array.isArray(model)
+      ? [ApiExtraModels(...model)]
+      : [ApiExtraModels(model)]),
     ApiOkResponse({
       schema: {
         properties: {
           message: { type: 'string' },
           statusCode: { type: 'number', default: HttpStatus.OK },
-          data: {
-            $ref: getSchemaPath(model),
-          },
+          data: Array.isArray(model)
+            ? {
+                type: 'array',
+                items: {
+                  $ref: getSchemaPath(model[0]),
+                },
+              }
+            : {
+                $ref: getSchemaPath(model),
+              },
         },
       },
     }),
@@ -99,20 +118,29 @@ export const ApiPutResponse = <TModel extends Type<any>>(
  * @returns
  * */
 export const ApiGetResponse = <TModel extends Type<any>>(
-  model: TModel,
+  model: TModel | TModel[],
   message: string,
 ) => {
   return applyDecorators(
     ResponseMessage(message),
-    ApiExtraModels(model),
+    ...(Array.isArray(model)
+      ? [ApiExtraModels(...model)]
+      : [ApiExtraModels(model)]),
     ApiOkResponse({
       schema: {
         properties: {
           message: { type: 'string' },
           statusCode: { type: 'number', default: HttpStatus.OK },
-          data: {
-            $ref: getSchemaPath(model),
-          },
+          data: Array.isArray(model)
+            ? {
+                type: 'array',
+                items: {
+                  $ref: getSchemaPath(model[0]),
+                },
+              }
+            : {
+                $ref: getSchemaPath(model),
+              },
         },
       },
     }),
@@ -125,20 +153,29 @@ export const ApiGetResponse = <TModel extends Type<any>>(
  * @returns
  * */
 export const ApiDeleteResponse = <TModel extends Type<any>>(
-  model: TModel,
+  model: TModel | TModel[],
   message: string,
 ) => {
   return applyDecorators(
     ResponseMessage(message),
-    ApiExtraModels(model),
+    ...(Array.isArray(model)
+      ? [ApiExtraModels(...model)]
+      : [ApiExtraModels(model)]),
     ApiOkResponse({
       schema: {
         properties: {
           message: { type: 'string' },
           statusCode: { type: 'number', default: HttpStatus.OK },
-          data: {
-            $ref: getSchemaPath(model),
-          },
+          data: Array.isArray(model)
+            ? {
+                type: 'array',
+                items: {
+                  $ref: getSchemaPath(model[0]),
+                },
+              }
+            : {
+                $ref: getSchemaPath(model),
+              },
         },
       },
     }),
