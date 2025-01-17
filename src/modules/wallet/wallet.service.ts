@@ -81,6 +81,7 @@ export class WalletService {
 
         return {
           ...e.Wallet['*'],
+          currency: { ...e.Wallet.currency['*'] },
           filter: e.op(
             isWalletInTransaction,
             'and',
