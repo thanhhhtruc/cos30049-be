@@ -1,14 +1,32 @@
 import { WalletDto } from '../wallet/wallet.dto';
 import { CurrencyDto } from '../currency/currency.dto';
+import { Type } from 'class-transformer';
+import { PaginationMetadata } from 'src/common/pagination/pagination.dto';
 
 export class TransactionDto {
   id: string;
 
-  amount: number;
+  value: number;
 
   hash: string;
 
-  createdAt: Date;
+  input: string;
+
+  transactionIndex: number;
+
+  gas: number;
+
+  gasUsed: number;
+
+  gasPrice: number;
+
+  transactionFee: number;
+
+  blockNumber: number;
+
+  blockHash: string;
+
+  blockTimestamp: Date;
 
   baseWallet?: WalletDto;
 
@@ -21,4 +39,17 @@ export enum TransactionType {
   INCOMING = 'INCOMING',
   OUTGOING = 'OUTGOING',
   ALL = 'ALL',
+}
+
+export class GetWalletTransactionsInput {
+  type?: TransactionType;
+  @Type(() => Number)
+  limit?: number;
+  @Type(() => Number)
+  page?: number;
+}
+
+export class GetWalletTransactionsOuput {
+  transactions: TransactionDto[];
+  metadata: PaginationMetadata;
 }

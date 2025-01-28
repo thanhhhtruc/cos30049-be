@@ -89,9 +89,17 @@ export namespace $default {
   export interface Transaction extends std.$Object {
     "destinationWallet": Wallet;
     "sourceWallet": Wallet;
-    "amount": number;
-    "createdAt": Date;
     "hash": string;
+    "value": number;
+    "blockHash": string;
+    "blockNumber": number;
+    "blockTimestamp": Date;
+    "gas": number;
+    "gasPrice": number;
+    "gasUsed": number;
+    "input": string;
+    "transactionFee": number;
+    "transactionIndex": number;
   }
   export interface User extends std.$Object {
     "address"?: string | null;

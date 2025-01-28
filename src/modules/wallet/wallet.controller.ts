@@ -5,9 +5,10 @@ import {
   ApiErrorResponse,
   ApiGetResponse,
 } from 'src/common/decorators/api-response.decorator';
-import { WalletDto } from './wallet.dto';
+import { GetWalletsInput, GetWalletsOutput, WalletDto } from './wallet.dto';
 import {
-  TransactionDto,
+  GetWalletTransactionsInput,
+  GetWalletTransactionsOuput,
   TransactionType,
 } from '../transaction/transaction.dto';
 import { TransactionService } from '../transaction/transaction.service';
@@ -20,6 +21,15 @@ export class WalletController {
     private readonly transactionService: TransactionService,
   ) {}
 
+  @Get()
+  @ApiQuery({ name: 'query', required: false })
+  @ApiGetResponse(GetWalletsOutput, 'All matching wallets found')
+  @ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ApiOperation({ summary: 'Get all wallets' })
+  async getWallets(@Query() query: GetWalletsInput) {
+    return this.walletService.getWallets(query);
+  }
+
   @Get(':address')
   @ApiGetResponse(WalletDto, 'Wallet found')
   @ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -31,17 +41,18 @@ export class WalletController {
   @Get(':address/transactions')
   // Adding ApiQuery due to this issue: https://github.com/nestjs/swagger/issues/30
   @ApiQuery({ name: 'type', enum: TransactionType, required: false })
-  @ApiGetResponse([TransactionDto], 'Get all transactions for a wallet')
+  @ApiGetResponse(GetWalletTransactionsOuput, 'All matching transactions found')
   @ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR)
-  @ApiOperation({ summary: 'Get a wallet based on the input address' })
+  @ApiOperation({
+    summary: 'Get a wallet transactions based on the input address',
+  })
   async getWalletTransactions(
     @Param('address') address: string,
-    @Query('type')
-    type?: TransactionType,
+    @Query() query: GetWalletTransactionsInput,
   ) {
     return this.transactionService.getWalletTransactions({
       address,
-      type,
+      ...query,
     });
   }
 

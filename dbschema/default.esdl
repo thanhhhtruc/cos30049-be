@@ -58,12 +58,19 @@ module default {
     required property hash -> str {
       constraint exclusive;
     };
-    required property amount -> float64;  # amount in its currency
-    required property createdAt -> datetime {
-      default := datetime_current();
-    };
-
+    required property value -> float64;  # amount in its currency
+    
     required sourceWallet: Wallet;
     required destinationWallet: Wallet;
+
+    required property input -> str;
+    required property transactionIndex -> int64;
+    required property gas -> int64;
+    required property gasUsed -> int64;
+    required property gasPrice -> float64;
+    required property transactionFee -> float64;
+    required property blockNumber -> int64;
+    required property blockHash -> str;
+    required property blockTimestamp -> datetime;
   }
 }

@@ -1,8 +1,9 @@
 import e from '@dbschema/edgeql-js';
 import { client } from '../seeder/seeder';
-import { generateCryptoAddress, randomNumber } from './seeder.util';
+import { randomNumber } from './seeder.util';
 import { mapSeries } from 'bluebird';
 import { WalletType } from '@dbschema/edgeql-js/modules/default';
+import { generateCryptoAddress } from './wallet.util';
 
 export const seedWallets = async (
   maxBalance: number = 1000,

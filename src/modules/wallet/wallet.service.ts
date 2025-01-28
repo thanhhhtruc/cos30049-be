@@ -1,7 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import e, { EdgeDBService } from '../edgedb/edgedb.service';
-import { WalletDto } from './wallet.dto';
+import { GetWalletsOutput, WalletDto } from './wallet.dto';
 import { TransactionType } from '../transaction/transaction.dto';
+import { PaginationMetadata } from 'src/common/pagination/pagination.dto';
 
 @Injectable()
 export class WalletService {
@@ -17,6 +18,43 @@ export class WalletService {
     const wallet = await this.edgeDBService.query(walletQuery);
 
     return wallet;
+  }
+
+  async getWallets({
+    query,
+    limit = 10,
+    page = 1,
+  }: {
+    query?: string;
+    limit?: number;
+    page?: number;
+  }): Promise<GetWalletsOutput> {
+    const totalResults = e.count(
+      e.select(e.Wallet, (wallet) => {
+        return {
+          filter: query
+            ? e.op(wallet.address, 'ilike', `%${query}%`)
+            : undefined,
+        };
+      }),
+    );
+
+    const total = await this.edgeDBService.query(totalResults);
+
+    const walletsQuery = e.select(e.Wallet, (wallet) => ({
+      ...e.Wallet['*'],
+      limit,
+      offset: (page - 1) * limit,
+      currency: { ...e.Wallet.currency['*'] },
+      filter: query ? e.op(wallet.address, 'ilike', `%${query}%`) : undefined,
+    }));
+
+    const wallets = await this.edgeDBService.query(walletsQuery);
+
+    return {
+      wallets,
+      metadata: new PaginationMetadata({ page, limit, total }),
+    };
   }
 
   async getWalletNeighbors({
