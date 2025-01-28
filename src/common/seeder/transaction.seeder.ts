@@ -62,10 +62,6 @@ const seedTransaction = async () => {
     return;
   }
 
-  // const transactedAmount = randomNumber(0, sourceWallet.balance);
-
-  // const timestamp = new Date().getUTCMilliseconds();
-
   const transaction = e.insert(e.Transaction, {
     ...generateCryptoTransactionData(
       sourceWallet.currency.symbol,

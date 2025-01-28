@@ -12,11 +12,15 @@ export class TransactionService {
     type = TransactionType.ALL,
     limit = 10,
     page = 1,
+    transactionHash,
+    dstAddress,
   }: {
     address: string;
     type?: TransactionType;
     limit?: number;
     page?: number;
+    transactionHash?: string;
+    dstAddress?: string;
   }): Promise<GetWalletTransactionsOuput> {
     const walletQuery = e.select(e.Wallet, () => ({
       ...e.Wallet['*'],
@@ -39,13 +43,28 @@ export class TransactionService {
           isDestinationWallet,
         );
 
+        const hashFilter = transactionHash
+          ? e.op(transaction.hash, 'ilike', `%${transactionHash}%`)
+          : e.op(true, '=', true);
+
+        const dstAddressFilter = dstAddress
+          ? e.op(
+              transaction.destinationWallet.address,
+              'ilike',
+              `%${dstAddress}%`,
+            )
+          : e.op(true, '=', true);
+
+        const typeFilter =
+          type === TransactionType.INCOMING
+            ? isDestinationWallet
+            : type === TransactionType.OUTGOING
+              ? isSourceWallet
+              : bothSourceAndDestination;
+
         return {
-          filter:
-            type === TransactionType.INCOMING
-              ? isDestinationWallet
-              : type === TransactionType.OUTGOING
-                ? isSourceWallet
-                : bothSourceAndDestination,
+          ...e.Transaction['*'],
+          filter: e.all(e.set(typeFilter, hashFilter, dstAddressFilter)),
         };
       }),
     );
@@ -67,16 +86,36 @@ export class TransactionService {
         isDestinationWallet,
       );
 
+      const hashFilter = transactionHash
+        ? e.op(transaction.hash, 'ilike', `%${transactionHash}%`)
+        : e.op(true, '=', true);
+
+      const dstAddressFilter = dstAddress
+        ? e.op(
+            transaction.destinationWallet.address,
+            'ilike',
+            `%${dstAddress}%`,
+          )
+        : e.op(true, '=', true);
+
+      const typeFilter =
+        type === TransactionType.INCOMING
+          ? isDestinationWallet
+          : type === TransactionType.OUTGOING
+            ? isSourceWallet
+            : bothSourceAndDestination;
+
       return {
         ...e.Transaction['*'],
+        sourceWallet: {
+          ...e.Transaction.sourceWallet['*'],
+        },
+        destinationWallet: {
+          ...e.Transaction.destinationWallet['*'],
+        },
         limit,
         offset: (page - 1) * limit,
-        filter:
-          type === TransactionType.INCOMING
-            ? isDestinationWallet
-            : type === TransactionType.OUTGOING
-              ? isSourceWallet
-              : bothSourceAndDestination,
+        filter: e.all(e.set(typeFilter, hashFilter, dstAddressFilter)),
       };
     });
 

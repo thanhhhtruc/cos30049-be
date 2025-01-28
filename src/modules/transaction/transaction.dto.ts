@@ -28,7 +28,7 @@ export class TransactionDto {
 
   blockTimestamp: Date;
 
-  baseWallet?: WalletDto;
+  sourceWallet?: WalletDto;
 
   destinationWallet?: WalletDto;
 
@@ -47,6 +47,8 @@ export class GetWalletTransactionsInput {
   limit?: number;
   @Type(() => Number)
   page?: number;
+  transactionHash?: string;
+  dstAddress?: string;
 }
 
 export class GetWalletTransactionsOuput {
