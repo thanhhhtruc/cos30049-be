@@ -14,6 +14,7 @@ export class TransactionService {
     page = 1,
     transactionHash,
     dstAddress,
+    createdAtOrder = 'DESC',
   }: {
     address: string;
     type?: TransactionType;
@@ -21,6 +22,7 @@ export class TransactionService {
     page?: number;
     transactionHash?: string;
     dstAddress?: string;
+    createdAtOrder?: 'ASC' | 'DESC';
   }): Promise<GetWalletTransactionsOuput> {
     const walletQuery = e.select(e.Wallet, () => ({
       ...e.Wallet['*'],
@@ -115,6 +117,10 @@ export class TransactionService {
         },
         limit,
         offset: (page - 1) * limit,
+        order_by: {
+          expression: transaction.blockTimestamp,
+          direction: createdAtOrder === 'ASC' ? e.ASC : e.DESC,
+        },
         filter: e.all(e.set(typeFilter, hashFilter, dstAddressFilter)),
       };
     });

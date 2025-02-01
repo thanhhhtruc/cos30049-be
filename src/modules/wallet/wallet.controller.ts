@@ -5,7 +5,12 @@ import {
   ApiErrorResponse,
   ApiGetResponse,
 } from 'src/common/decorators/api-response.decorator';
-import { GetWalletsInput, GetWalletsOutput, WalletDto } from './wallet.dto';
+import {
+  GetWalletDetailsOutput,
+  GetWalletsInput,
+  GetWalletsOutput,
+  WalletDto,
+} from './wallet.dto';
 import {
   GetWalletTransactionsInput,
   GetWalletTransactionsOuput,
@@ -36,6 +41,16 @@ export class WalletController {
   @ApiOperation({ summary: 'Get a wallet based on the input address' })
   async getWallet(@Param('address') address: string) {
     return this.walletService.getWallet({ address });
+  }
+
+  @Get(':address/details')
+  @ApiGetResponse(GetWalletDetailsOutput, 'Wallet and wallet details found')
+  @ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ApiOperation({
+    summary: 'Get a wallet and its details based on the input address',
+  })
+  async getWalletDetails(@Param('address') address: string) {
+    return this.walletService.getWalletDetails({ address });
   }
 
   @Get(':address/transactions')

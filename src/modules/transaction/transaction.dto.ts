@@ -41,6 +41,11 @@ export enum TransactionType {
   ALL = 'ALL',
 }
 
+export enum TransactionOrderBy {
+  ASC = 'ASC',
+  DESC = 'DESC',
+}
+
 export class GetWalletTransactionsInput {
   type?: TransactionType;
   @Type(() => Number)
@@ -49,6 +54,7 @@ export class GetWalletTransactionsInput {
   page?: number;
   transactionHash?: string;
   dstAddress?: string;
+  createdAtOrder?: TransactionOrderBy;
 }
 
 export class GetWalletTransactionsOuput {

@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import e, { EdgeDBService } from '../edgedb/edgedb.service';
-import { GetWalletsOutput, WalletDto } from './wallet.dto';
+import {
+  GetWalletDetailsOutput,
+  GetWalletsOutput,
+  WalletDto,
+} from './wallet.dto';
 import { TransactionType } from '../transaction/transaction.dto';
 import { PaginationMetadata } from 'src/common/pagination/pagination.dto';
 
@@ -18,6 +22,85 @@ export class WalletService {
     const wallet = await this.edgeDBService.query(walletQuery);
 
     return wallet;
+  }
+
+  async getWalletDetails({
+    address,
+  }: {
+    address: string;
+  }): Promise<GetWalletDetailsOutput> {
+    const walletQuery = e.select(e.Wallet, () => ({
+      ...e.Wallet['*'],
+      currency: { ...e.Wallet.currency['*'] },
+      filter_single: { address },
+    }));
+
+    // Find two most recent transactions
+    const twoMostRecenttransactionsQuery = e.select(
+      e.Transaction,
+      (transaction) => {
+        const isSourceWallet = e.op(transaction.sourceWallet, '=', walletQuery);
+
+        const isDestinationWallet = e.op(
+          transaction.destinationWallet,
+          '=',
+          walletQuery,
+        );
+
+        return {
+          ...e.Transaction['*'],
+          sourceWallet: {
+            ...e.Transaction.sourceWallet['*'],
+          },
+          destinationWallet: {
+            ...e.Transaction.destinationWallet['*'],
+          },
+          filter: e.op(isSourceWallet, 'or', isDestinationWallet),
+          order_by: {
+            expression: transaction.blockTimestamp,
+            direction: 'DESC',
+          },
+          limit: 2,
+        };
+      },
+    );
+
+    // Find the first transaction of the wallet
+    const firstTransactionQuery = e
+      .select(e.Transaction, (transaction) => {
+        const isSourceWallet = e.op(transaction.sourceWallet, '=', walletQuery);
+
+        const isDestinationWallet = e.op(
+          transaction.destinationWallet,
+          '=',
+          walletQuery,
+        );
+
+        return {
+          ...e.Transaction['*'],
+          filter: e.op(isSourceWallet, 'or', isDestinationWallet),
+          order_by: {
+            expression: transaction.blockTimestamp,
+            direction: 'ASC',
+          },
+          limit: 1,
+        };
+      })
+      .assert_single();
+
+    const wallet = await this.edgeDBService.query(walletQuery);
+    const twoMostRecentTransactions = await this.edgeDBService.query(
+      twoMostRecenttransactionsQuery,
+    );
+    const firstTransaction = await this.edgeDBService.query(
+      firstTransactionQuery,
+    );
+
+    return {
+      wallet,
+      recentTransactions: twoMostRecentTransactions,
+      firstTransaction,
+    };
   }
 
   async getWallets({
