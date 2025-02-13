@@ -18,6 +18,7 @@ async function clearDatabase() {
 }
 
 async function seed() {
+  console.log('EDGEDB Seeding')
   console.log('🌱 Starting seed...');
   console.time('⏱️ Seed time');
 
