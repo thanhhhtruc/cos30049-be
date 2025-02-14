@@ -13,7 +13,9 @@
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "db:migrate": "edgedb migration create && edgedb migrate && pnpm run db:generate",
     "db:generate": "npx @edgedb/generate edgeql-js && npx @edgedb/generate interfaces",
-    "db:seed": "ts-node -r tsconfig-paths/register src/common/seeder/seeder.ts"
+    "db:seed": "ts-node -r tsconfig-paths/register src/common/seeder/seeder.ts",
+    "remote-db:migrate": "bash src/common/scripts/migrate-db.sh",
+    "remote-db:seed": "bash src/common/scripts/seed-db.sh"
   },
   "dependencies": {
     "@nestjs/axios": "^3.1.3",
