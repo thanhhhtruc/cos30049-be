@@ -44,7 +44,6 @@ async function bootstrap() {
     .getOrThrow('GLOBAL_API_PREFIX');
 
   const PORT = app.get(ConfigService).getOrThrow('PORT');
-  const LOCAL_INTERFACE = app.get(ConfigService).getOrThrow('LOCAL_INTERFACE');
 
   app.useLogger(app.get(Logger));
   app.setGlobalPrefix(GLOBAL_API_PREFIX);
@@ -66,7 +65,7 @@ async function bootstrap() {
   // Swagger
   createSwagger(app);
 
-  await app.listen(PORT, LOCAL_INTERFACE);
+  await app.listen(PORT, '0.0.0.0');
 }
 
 bootstrap();
