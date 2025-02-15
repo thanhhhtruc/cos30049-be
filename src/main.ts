@@ -7,6 +7,7 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 import { ConfigService } from '@nestjs/config';
 import { Logger, LoggerErrorInterceptor } from 'nestjs-pino';
 import { patchNestJsSwagger } from 'nestjs-zod';
+import { NestExpressApplication } from '@nestjs/platform-express';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 declare const module: any;
@@ -33,7 +34,7 @@ function createSwagger(app: INestApplication) {
 }
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     bufferLogs: true,
     cors: true,
   });
