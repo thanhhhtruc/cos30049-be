@@ -66,7 +66,7 @@ async function bootstrap() {
   // Swagger
   createSwagger(app);
 
-  await app.listen(10000, '0.0.0.0');
+  await app.listen(PORT, '0.0.0.0');
 }
 
 bootstrap();
