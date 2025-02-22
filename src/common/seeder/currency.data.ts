@@ -44,7 +44,7 @@ export const currencies: CreateCurrencyInput[] = [
   {
     symbol: 'DOT',
     name: 'Polkadot',
-    iconImg: 'https://cryptologos.cc/logos/polkadot-dot-logo.png',
+    iconImg: 'https://cryptologos.cc/logos/polkadot-new-dot-logo.png',
   },
   {
     symbol: 'MATIC',
