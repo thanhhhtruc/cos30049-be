@@ -1,4 +1,16 @@
 export const exchangeRates = [
+  // Ratio to itself is 1
+  { baseCurrency: 'ETH', destinationCurrency: 'ETH', ratio: 1 },
+  { baseCurrency: 'USDT', destinationCurrency: 'USDT', ratio: 1 },
+  { baseCurrency: 'ADA', destinationCurrency: 'ADA', ratio: 1 },
+  { baseCurrency: 'MATIC', destinationCurrency: 'MATIC', ratio: 1 },
+  { baseCurrency: 'XRP', destinationCurrency: 'XRP', ratio: 1 },
+  { baseCurrency: 'BNB', destinationCurrency: 'BNB', ratio: 1 },
+  { baseCurrency: 'DOT', destinationCurrency: 'DOT', ratio: 1 },
+  { baseCurrency: 'DOGE', destinationCurrency: 'DOGE', ratio: 1 },
+  { baseCurrency: 'SOL', destinationCurrency: 'SOL', ratio: 1 },
+  { baseCurrency: 'BTC', destinationCurrency: 'BTC', ratio: 1 },
+  // Ratio to different currency
   {
     baseCurrency: 'BTC',
     destinationCurrency: 'ETH',
@@ -46,11 +58,6 @@ export const exchangeRates = [
   },
   {
     baseCurrency: 'ETH',
-    destinationCurrency: 'BTC',
-    ratio: 28.068,
-  },
-  {
-    baseCurrency: 'ETH',
     destinationCurrency: 'BNB',
     ratio: 0.21,
   },
@@ -91,16 +98,6 @@ export const exchangeRates = [
   },
   {
     baseCurrency: 'BNB',
-    destinationCurrency: 'BTC',
-    ratio: 132.359,
-  },
-  {
-    baseCurrency: 'BNB',
-    destinationCurrency: 'ETH',
-    ratio: 4.753,
-  },
-  {
-    baseCurrency: 'BNB',
     destinationCurrency: 'USDT',
     ratio: 0.00142,
   },
@@ -136,21 +133,6 @@ export const exchangeRates = [
   },
   {
     baseCurrency: 'USDT',
-    destinationCurrency: 'BTC',
-    ratio: 93657,
-  },
-  {
-    baseCurrency: 'USDT',
-    destinationCurrency: 'ETH',
-    ratio: 0.0003,
-  },
-  {
-    baseCurrency: 'USDT',
-    destinationCurrency: 'BNB',
-    ratio: 0.00142,
-  },
-  {
-    baseCurrency: 'USDT',
     destinationCurrency: 'ADA',
     ratio: 0.85,
   },
@@ -178,5 +160,80 @@ export const exchangeRates = [
     baseCurrency: 'USDT',
     destinationCurrency: 'MATIC',
     ratio: 0.45,
+  },
+  {
+    baseCurrency: 'ADA',
+    destinationCurrency: 'XRP',
+    ratio: 0.4081,
+  },
+  {
+    baseCurrency: 'ADA',
+    destinationCurrency: 'DOGE',
+    ratio: 2.7003,
+  },
+  {
+    baseCurrency: 'ADA',
+    destinationCurrency: 'SOL',
+    ratio: 0.00448,
+  },
+  {
+    baseCurrency: 'ADA',
+    destinationCurrency: 'DOT',
+    ratio: 0.1294,
+  },
+  {
+    baseCurrency: 'ADA',
+    destinationCurrency: 'MATIC',
+    ratio: 1.8958,
+  },
+  {
+    baseCurrency: 'XRP',
+    destinationCurrency: 'DOGE',
+    ratio: 6.619,
+  },
+  {
+    baseCurrency: 'XRP',
+    destinationCurrency: 'SOL',
+    ratio: 0.01098,
+  },
+  {
+    baseCurrency: 'XRP',
+    destinationCurrency: 'DOT',
+    ratio: 0.3172,
+  },
+  {
+    baseCurrency: 'XRP',
+    destinationCurrency: 'MATIC',
+    ratio: 4.6458,
+  },
+  {
+    baseCurrency: 'DOGE',
+    destinationCurrency: 'SOL',
+    ratio: 0.00166,
+  },
+  {
+    baseCurrency: 'DOGE',
+    destinationCurrency: 'DOT',
+    ratio: 0.0479,
+  },
+  {
+    baseCurrency: 'DOGE',
+    destinationCurrency: 'MATIC',
+    ratio: 0.7021,
+  },
+  {
+    baseCurrency: 'SOL',
+    destinationCurrency: 'DOT',
+    ratio: 28.876,
+  },
+  {
+    baseCurrency: 'SOL',
+    destinationCurrency: 'MATIC',
+    ratio: 422.9167,
+  },
+  {
+    baseCurrency: 'DOT',
+    destinationCurrency: 'MATIC',
+    ratio: 14.6458,
   },
 ];

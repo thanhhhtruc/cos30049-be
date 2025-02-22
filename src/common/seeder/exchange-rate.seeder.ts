@@ -31,6 +31,12 @@ export const seedExchangeRates = async () => {
       updatedAt: new Date(),
     });
 
+    // If the base currency is the same as the destination currency,
+    // we only need to insert one exchange rate
+    if (rate.baseCurrency === rate.destinationCurrency) {
+      return [insertExchangeRateQueryFromBaseToDst.toEdgeQL()];
+    }
+
     return [
       insertExchangeRateQueryFromBaseToDst.toEdgeQL(),
       insertExchangeRateQueryFromDstToBase.toEdgeQL(),

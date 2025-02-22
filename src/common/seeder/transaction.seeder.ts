@@ -3,7 +3,7 @@ import { client } from '../seeder/seeder';
 import { map } from 'bluebird';
 import { generateCryptoTransactionData } from './transaction.util';
 
-export const seedTransactions = async (count: number = 1000) => {
+export const seedTransactions = async (count: number = 100) => {
   console.log(`💸 Seeding transactions...`);
 
   // .map can cause errors since transactions run concurrently and they are interdependent
@@ -37,11 +37,11 @@ const seedTransaction = async () => {
   const destinationWallet = await e
     .select(e.Wallet, (wallet) => {
       const isNotSourceWallet = e.op(wallet.id, '!=', e.uuid(sourceWallet.id));
-      const isSameCurrency = e.op(
-        wallet.currency.id,
-        '=',
-        e.uuid(sourceWallet.currency.id),
-      );
+      // const isSameCurrency = e.op(
+      //   wallet.currency.id,
+      //   '=',
+      //   e.uuid(sourceWallet.currency.id),
+      // );
 
       return {
         ...e.Wallet['*'],
@@ -51,7 +51,7 @@ const seedTransaction = async () => {
         },
         limit: 1,
         order_by: e.random(),
-        filter: e.op(isNotSourceWallet, 'and', isSameCurrency),
+        filter: isNotSourceWallet,
       };
     })
     .assert_single()
@@ -62,12 +62,44 @@ const seedTransaction = async () => {
     return;
   }
 
+  const exchangeRate = await e
+    .select(e.ExchangeRate, (rate) => {
+      const isBaseCurrency = e.op(
+        rate.baseCurrency.symbol,
+        '=',
+        e.str(sourceWallet.currency.symbol),
+      );
+
+      const isDestinationCurrency = e.op(
+        rate.destinationCurrency.symbol,
+        '=',
+        e.str(destinationWallet.currency.symbol),
+      );
+
+      return {
+        ...e.ExchangeRate['*'],
+        filter_single: e.op(isBaseCurrency, 'and', isDestinationCurrency),
+      };
+    })
+    .run(client);
+
+  if (!exchangeRate) {
+    console.error(
+      `No exchange rate found for ${sourceWallet.currency.symbol} - ${destinationWallet.currency.symbol}. Please seed exchange rates first.`,
+    );
+    return;
+  }
+
+  const transactionData = generateCryptoTransactionData({
+    srcAddress: sourceWallet.address,
+    dstAddress: destinationWallet.address,
+    srcSymbol: sourceWallet.currency.symbol,
+    dstSymbol: destinationWallet.currency.symbol,
+    ratio: exchangeRate.ratio,
+  });
+
   const transaction = e.insert(e.Transaction, {
-    ...generateCryptoTransactionData(
-      sourceWallet.currency.symbol,
-      sourceWallet.address,
-      destinationWallet.address,
-    ),
+    ...transactionData,
     sourceWallet: e.select(e.Wallet, () => ({
       filter_single: { id: sourceWallet.id },
     })),
@@ -92,6 +124,7 @@ const seedTransaction = async () => {
 
   await client.transaction(async (tx) => {
     await tx.querySingle(transaction.toEdgeQL());
+
     // await tx.querySingle(updateSrcWallet.toEdgeQL());
     // await tx.querySingle(updateDstWallet.toEdgeQL());
   });
