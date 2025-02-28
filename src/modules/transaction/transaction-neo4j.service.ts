@@ -1,82 +1,69 @@
 import { Injectable } from '@nestjs/common';
 import { Neo4jService } from '../neo4j/neo4j.service';
-import { GetWalletTransactionsOuput, TransactionType } from './transaction.dto';
-import { PaginationMetadata } from 'src/common/pagination/pagination.dto';
 
 @Injectable()
-export class TransactionService {
+export class Neo4jTransactionService {
   constructor(private neo4jService: Neo4jService) {}
 
-  async getWalletTransactions({
-    address,
-    type = TransactionType.ALL,
-    limit = 10,
-    page = 1,
-    transactionHash,
-    dstAddress,
-    createdAtOrder = 'DESC',
-  }: {
-    address: string;
-    type?: TransactionType;
-    limit?: number;
-    page?: number;
-    transactionHash?: string;
-    dstAddress?: string;
-    createdAtOrder?: 'ASC' | 'DESC';
-  }): Promise<GetWalletTransactionsOuput> {
-    const skip = (page - 1) * limit;
-    const order = createdAtOrder === 'ASC' ? 'ASC' : 'DESC';
+  async fetchGraphData(address?: string) {
+    try {
+      const nodesQuery = `
+        MATCH (w:Wallet)-[:HAS_CURRENCY]->(c:Currency)
+        ${address ? 'WHERE w.address = $address' : ''}
+        WITH DISTINCT w, c
+        RETURN w, c
+        ${!address ? 'LIMIT 50' : ''}
+      `;
 
-    const matchQuery = `
-      MATCH (wallet:Wallet {address: $address})
-      MATCH (transaction:Transaction)
-      WHERE (transaction.sourceWallet = wallet OR transaction.destinationWallet = wallet)
-      ${transactionHash ? 'AND transaction.hash CONTAINS $transactionHash' : ''}
-      ${dstAddress ? 'AND transaction.destinationWallet.address CONTAINS $dstAddress' : ''}
-      ${type === TransactionType.INCOMING ? 'AND transaction.destinationWallet = wallet' : ''}
-      ${type === TransactionType.OUTGOING ? 'AND transaction.sourceWallet = wallet' : ''}
-    `;
+      const relationshipsQuery = `
+        MATCH (w:Wallet ${address ? '{address: $address}' : ''})
+        MATCH path=(source:Wallet)-[:SENT]->(tx:Transaction)-[:RECEIVED]->(dest:Wallet)
+        WHERE source = w OR dest = w
+        WITH source, tx, dest, path
+        ORDER BY tx.blockTimestamp DESC
+        ${!address ? 'LIMIT 100' : ''}
+        WITH COLLECT(path) as paths
+        UNWIND paths as p
+        WITH DISTINCT relationships(p) as rels, nodes(p) as nodes
+        UNWIND rels as rel
+        WITH DISTINCT rel as tx, nodes as wallets
+        MATCH (source:Wallet)-[:SENT]->(tx)-[:RECEIVED]->(dest:Wallet)
+        RETURN source, tx, dest
+      `;
 
-    const totalQuery = `
-      ${matchQuery}
-      RETURN COUNT(transaction) AS total
-    `;
+    const [nodesResult, relationshipsResult] = await Promise.all([
+      this.neo4jService.read(nodesQuery),
+      this.neo4jService.read(relationshipsQuery)
+    ]);
 
-    const transactionsQuery = `
-      ${matchQuery}
-      RETURN transaction, transaction.sourceWallet, transaction.destinationWallet
-      ORDER BY transaction.blockTimestamp ${order}
-      SKIP $skip
-      LIMIT $limit
-    `;
-
-    const totalResult = await this.neo4jService.read(totalQuery, {
-      address,
-      transactionHash,
-      dstAddress,
-    });
-
-    const total = totalResult.records[0].get('total').low;
-
-    const transactionsResult = await this.neo4jService.read(transactionsQuery, {
-      address,
-      transactionHash,
-      dstAddress,
-      skip,
-      limit,
-    });
-
-    const transactions = transactionsResult.records.map((record: any) => ({
-        ...record.get('transaction').properties,
-        sourceWallet: record.get('transaction.sourceWallet').properties,
-        destinationWallet: record.get('transaction.destinationWallet').properties,
+    const nodes = nodesResult.records.map(record => ({
+      id: record.get('w').properties.address,
+      address: record.get('w').properties.address,
+      type: 'wallet',
+      data: {
+        address: record.get('w').properties.address,
+        balance: record.get('w').properties.balance,
+        type: 'wallet',
+        currency: {
+          type: record.get('c').properties.type,
+          symbol: 'ETH',
+          iconImg: null
+        }
+      }
     }));
 
-    const metadata = new PaginationMetadata({ page, limit, total });
+    const relationships = relationshipsResult.records.map(record => ({
+      source: record.get('source').properties.address,
+      target: record.get('dest').properties.address,
+      value: record.get('tx').properties.value,
+      timestamp: record.get('tx').properties.blockTimestamp,
+      hash: record.get('tx').properties.hash
+    }));
 
-    return {
-        transactions,
-        metadata,
-    };
+    return { nodes, relationships };
+  }
+  catch (error) {
+      throw error;
+    }
   }
 }

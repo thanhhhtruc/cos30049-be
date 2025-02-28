@@ -1,6 +1,7 @@
 import { DynamicModule, Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Neo4jService } from './neo4j.service';
+import { Neo4jController } from './neo4j.controller';
 import { Neo4jConstraintsInitializer } from './init/constraints';
 
 @Module({})
