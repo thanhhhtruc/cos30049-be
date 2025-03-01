@@ -13,22 +13,29 @@ export class Neo4jService implements OnApplicationShutdown {
     const password = this.configService.get<string>('NEO4J_PASSWORD') || '';
     
     const config: Config = {
-      maxTransactionRetryTime: 30000,
+      maxTransactionRetryTime: 60000,
       maxConnectionPoolSize: 50,
-      connectionTimeout: 30000,
-      connectionAcquisitionTimeout: 2000,
+      connectionTimeout: 60000,
+      connectionAcquisitionTimeout: 30000,
+      maxConnectionLifetime: 60 * 60 * 1000, // 1 hour
+      logging: {
+        level: 'info',
+        logger: (level, message) => this.logger.log(`[Neo4j] ${level}: ${message}`)
+      }
     };
+    
 
-    if (!password) {
-      throw new Error('Neo4j password is not configured. Please check your environment variables.');
+    if (!uri || !password) {
+      throw new Error('Neo4j connection details are not properly configured. Please check your environment variables.');
     }
 
     try {
       this.driver = neo4j.driver(
-        uri || 'bolt://localhost:7687', // Provide a default URI if `uri` is not set
+        uri,
         neo4j.auth.basic(username, password),
         config
       );
+      this.verifyConnectivity();
       this.logger.log(`Neo4j connection established to ${uri}`);
     } catch (error) {
       this.logger.error('Failed to create Neo4j driver:', error);
@@ -50,6 +57,23 @@ export class Neo4jService implements OnApplicationShutdown {
     await this.close();
   }
 
+  private async verifyConnectivity(retries = 5, delay = 2000): Promise<void> {
+    for (let i = 0; i < retries; i++) {
+      try {
+        await this.driver.verifyConnectivity();
+        return;
+      } catch (error) {
+        this.logger.warn(`Connection attempt ${i + 1} failed: ${error.message}`);
+        if (i === retries - 1) {
+          this.logger.error(`All connection attempts failed after ${retries} retries`, error);
+          throw new Error(`Neo4j connection failed: ${error.message}`);
+        }
+        this.logger.warn(`Retrying in ${delay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+  }
+
   async read(
     query: string,
     parameters?: Record<string, any>
@@ -60,13 +84,12 @@ export class Neo4jService implements OnApplicationShutdown {
     });
 
     try {
+      await this.verifyConnectivity();
       const result = await session.run(query, parameters);
-      // Remove or change this log level to reduce verbosity
-      // this.logger.debug(`Read query executed: ${query}`);
       return result;
     } catch (error) {
       this.logger.error(`Error executing read query: ${query}`, error);
-      throw error;
+      throw new Error('Database connection failed: ' + error.message);
     } finally {
       await session.close();
     }
@@ -82,11 +105,12 @@ export class Neo4jService implements OnApplicationShutdown {
     });
 
     try {
+      await this.verifyConnectivity();
       const result = await session.run(query, parameters);
       return result;
     } catch (error) {
       this.logger.error(`Error executing write query: ${query}`, error);
-      throw error;
+      throw new Error('Database connection failed: ' + error.message);
     } finally {
       await session.close();
     }
@@ -110,4 +134,6 @@ export class Neo4jService implements OnApplicationShutdown {
       await session.close();
     }
   }
+
+  
 }

@@ -10,91 +10,103 @@ export class Neo4jImportService {
 
   constructor(private readonly neo4jService: Neo4jService) {}
 
-  
   private async parseCsvFile(filePath: string): Promise<Record<string, string>[]> {
-    return new Promise((resolve, reject) => {
-      const results: Record<string, string>[] = [];
-      fs.createReadStream(filePath)
-        .pipe(parse({ columns: true, skip_empty_lines: true }))
-        .on('data', (data: Record<string, string>) => results.push(data))
-        .on('end', () => resolve(results))
-        .on('error', (error: Error) => reject(error));
-    });
+    if (!fs.existsSync(filePath)) {
+      this.logger.error(`CSV file not found: ${filePath}`);
+      throw new Error(`CSV file not found: ${filePath}`);
+    }
+
+    try {
+      return new Promise((resolve, reject) => {
+        const results: Record<string, string>[] = [];
+        fs.createReadStream(filePath)
+          .pipe(parse({ columns: true, skip_empty_lines: true }))
+          .on('data', (data: Record<string, string>) => {
+            if (Object.values(data).some(value => value === undefined || value === null)) {
+              this.logger.warn('Found row with undefined or null values:', data);
+            }
+            results.push(data);
+          })
+          .on('end', () => {
+            this.logger.debug(`Successfully parsed ${results.length} rows from ${filePath}`);
+            resolve(results);
+          })
+          .on('error', (error: Error) => {
+            this.logger.error(`Error parsing CSV file ${filePath}:`, error);
+            reject(error);
+          });
+      });
+    } catch (error) {
+      this.logger.error(`Failed to parse CSV file ${filePath}:`, error);
+      throw error;
+    }
   }
 
-  async importUsers(csvFilePath: string) {
-    const users = await this.parseCsvFile(csvFilePath);
-    const query = `
-      UNWIND $users as user
-      CREATE (u:User {
-        id: user.id,
-        email: user.email,
-        normalizedEmail: user.normalizedEmail,
-        password: user.password
-      })
-    `;
-    await this.neo4jService.write(query, { users });
-    this.logger.log(`Imported ${users.length} users`);
-  }
+  private async createConstraints() {
+    const constraints = [
+      'CREATE CONSTRAINT addressId_Source_uniq IF NOT EXISTS FOR (n:Source) REQUIRE (n.addressId) IS UNIQUE',
+      'CREATE CONSTRAINT addressId_Destination_uniq IF NOT EXISTS FOR (n:Destination) REQUIRE (n.addressId) IS UNIQUE'
+    ];
 
-  async importCurrencies(csvFilePath: string) {
-    const currencies = await this.parseCsvFile(csvFilePath);
-    const query = `
-      UNWIND $currencies as currency
-      CREATE (c:Currency {
-        type: currency.type,
-        name: currency.name,
-        symbol: currency.symbol
-      })
-    `;
-    await this.neo4jService.write(query, { currencies });
-    this.logger.log(`Imported ${currencies.length} currencies`);
+    for (const constraint of constraints) {
+      await this.neo4jService.write(constraint);
+    }
+    this.logger.log('Created uniqueness constraints');
   }
 
   async importWallets(csvFilePath: string) {
+    await this.createConstraints();
     const wallets = await this.parseCsvFile(csvFilePath);
-    const query = `
-      UNWIND $wallets as wallet
-      MATCH (c:Currency {type: wallet.currencyType})
-      CREATE (w:Wallet {
-        address: wallet.address,
-        balance: toFloat(wallet.balance)
-      })
-      CREATE (w)-[:HAS_CURRENCY]->(c)
+    
+    const sourceQuery = `
+      CALL {
+        WITH $batch as batch
+        UNWIND batch as wallet
+        MERGE (n:Source { addressId: wallet.addressId })
+        SET n.addressId = wallet.addressId,
+            n.type = wallet.type
+      } IN TRANSACTIONS OF 10000 ROWS
     `;
-    await this.neo4jService.write(query, { wallets });
-    this.logger.log(`Imported ${wallets.length} wallets`);
+
+    const destQuery = `
+      CALL {
+        WITH $batch as batch
+        UNWIND batch as wallet
+        MERGE (n:Destination { addressId: wallet.addressId })
+        SET n.addressId = wallet.addressId,
+            n.type = wallet.type
+      } IN TRANSACTIONS OF 10000 ROWS
+    `;
+
+    await this.neo4jService.write(sourceQuery, { batch: wallets });
+    await this.neo4jService.write(destQuery, { batch: wallets });
+    this.logger.log(`Imported ${wallets.length} wallets as Source and Destination nodes`);
   }
 
   async importTransactions(csvFilePath: string) {
     const transactions = await this.parseCsvFile(csvFilePath);
     const query = `
-      UNWIND $transactions as tx
-      MATCH (source:Wallet {address: tx.sourceAddress})
-      MATCH (dest:Wallet {address: tx.destinationAddress})
-      CREATE (source)-[:SENT]->(t:Transaction {
-        hash: tx.hash,
-        value: toFloat(tx.value),
-        blockTimestamp: datetime(tx.blockTimestamp)
-      })-[:RECEIVED]->(dest)
+      CALL {
+        WITH $batch as batch
+        UNWIND batch as tx
+        MATCH (source:Source { addressId: tx.from_address })
+        MATCH (target:Destination { addressId: tx.to_address })
+        MERGE (source)-[r:Transaction]->(target)
+        SET r.hash = tx.hash,
+            r.value = toFloat(trim(tx.value)),
+            r.input = tx.input,
+            r.transaction_index = toInteger(trim(tx.transaction_index)),
+            r.gas = toInteger(trim(tx.gas)),
+            r.gas_used = toInteger(trim(tx.gas_used)),
+            r.gas_price = toInteger(trim(tx.gas_price)),
+            r.transaction_fee = toInteger(trim(tx.transaction_fee)),
+            r.block_number = toInteger(trim(tx.block_number)),
+            r.block_hash = tx.block_hash,
+            r.block_timestamp = toInteger(trim(tx.block_timestamp))
+      } IN TRANSACTIONS OF 10000 ROWS
     `;
-    await this.neo4jService.write(query, { transactions });
+    await this.neo4jService.write(query, { batch: transactions });
     this.logger.log(`Imported ${transactions.length} transactions`);
-  }
-
-  async importExchangeRates(csvFilePath: string) {
-    const rates = await this.parseCsvFile(csvFilePath);
-    const query = `
-      UNWIND $rates as rate
-      MATCH (base:Currency {type: rate.baseCurrency})
-      MATCH (quote:Currency {type: rate.quoteCurrency})
-      CREATE (base)-[:EXCHANGE_RATE {
-        rate: toFloat(rate.rate),
-        timestamp: datetime(rate.timestamp)
-      }]->(quote)
-    `;
-    await this.neo4jService.write(query, { rates });
-    this.logger.log(`Imported ${rates.length} exchange rates`);
   }
 
   async clearDatabase() {
@@ -110,11 +122,8 @@ export class Neo4jImportService {
 
       await this.clearDatabase();
       
-      await this.importUsers(path.join(dataDir, 'users.csv'));
-      await this.importCurrencies(path.join(dataDir, 'currencies.csv'));
-      await this.importWallets(path.join(dataDir, 'wallets.csv'));
-      await this.importTransactions(path.join(dataDir, 'transactions.csv'));
-      await this.importExchangeRates(path.join(dataDir, 'exchange_rates.csv'));
+      await this.importWallets(path.join(dataDir, 'nodes.csv'));
+      await this.importTransactions(path.join(dataDir, 'relationships.csv'));
 
       console.timeEnd('Import time');
       this.logger.log('Data import completed successfully!');
