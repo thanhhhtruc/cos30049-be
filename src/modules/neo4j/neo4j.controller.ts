@@ -54,18 +54,21 @@ export class Neo4jController {
         `
         MATCH (w)
         WHERE toLower(w.addressId) = $normalizedAddress
-        OPTIONAL MATCH (w)-[tx:Transaction]->()
+        OPTIONAL MATCH (w)-[tx:Transaction]->()        
         WITH w, count(tx) as txCount
-        RETURN w.addressId as address, labels(w) as type, txCount
-      `,
-        { normalizedAddress },
+        RETURN 
+          w.addressId as address, 
+          w.type as walletType,
+          labels(w) as type,
+          txCount`, 
+          { normalizedAddress },
       );
 
       const record = result.records[0];
       return {
         wallet: {
           address: record.get('address'),
-          type: record.get('type')[0] || 'default',
+          type: record.get('walletType'),
           transactionCount: record.get('txCount').toNumber(),
         },
       };
@@ -89,36 +92,40 @@ export class Neo4jController {
   @Get('wallets/:address/neighbors')
   async getWalletNeighbors(@Param('address') address: string) {
     try {
+      const normalizedAddress = address.toLowerCase();
       const [neighborsResult, transactionsResult] = await Promise.all([
         this.neo4jService.read(
           `
-          MATCH (source:Source {addressId: $address})
-          MATCH (source)-[tx:Transaction]->(dest:Destination)
+          MATCH (source:Source)-[tx:Transaction]->(dest:Destination)
+          WHERE toLower(source.addressId) = $normalizedAddress
           WITH DISTINCT dest, count(tx) as txCount
-          RETURN dest.addressId as address, dest.type as type, txCount
+          RETURN 
+            dest.addressId as address, 
+            dest.type as type,
+            txCount
           ORDER BY txCount DESC
         `,
-          { address },
+          { normalizedAddress },
         ),
         this.neo4jService.read(
           `
-          MATCH (source:Source {addressId: $address})
-          MATCH (source)-[tx:Transaction]->(dest:Destination)
+          MATCH (source:Source)-[tx:Transaction]->(dest:Destination)
+          WHERE toLower(source.addressId) = $normalizedAddress
           RETURN tx, dest.addressId as destAddress
           ORDER BY tx.block_timestamp DESC
           LIMIT 50
         `,
-          { address },
+          { normalizedAddress },
         ),
       ]);
 
-      const neighbors = neighborsResult.records.map((record) => ({
+      const neighbors = neighborsResult.records ? neighborsResult.records.map((record) => ({
         address: record.get('address'),
-        type: record.get('type') || 'default',
+        type: record.get('type'),
         transactionCount: record.get('txCount').toNumber(),
-      }));
+      })) : [];
 
-      const transactions = transactionsResult.records.map((record) => {
+      const transactions = transactionsResult.records ? transactionsResult.records.map((record) => {
         const tx = record.get('tx').properties;
         return {
           hash: tx.hash,
@@ -133,7 +140,7 @@ export class Neo4jController {
           gasPrice: tx.gas_price,
           transactionFee: tx.transaction_fee,
         };
-      });
+      }) : [];
 
       return { neighbors, transactions };
     } catch (error) {

@@ -11,6 +11,7 @@ export class Neo4jModule {
     return {
       module: Neo4jModule,
       imports: [ConfigModule],
+      controllers: [Neo4jController],
       providers: [
         {
           provide: Neo4jService,
