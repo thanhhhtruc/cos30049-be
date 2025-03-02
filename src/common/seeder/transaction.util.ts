@@ -140,7 +140,7 @@ export function generateCryptoTransactionData({
       : randomNumber(10000000, 50000000);
 
   return {
-    value,
+    value: BigInt(value),
     hash,
     input: '0x',
     transactionIndex,

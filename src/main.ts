@@ -66,6 +66,12 @@ async function bootstrap() {
   // Swagger
   createSwagger(app);
 
+  // Override TS BigInt toJSON to return string when serializing
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (BigInt as any).prototype.toJSON = function () {
+    return this.toString();
+  };
+
   await app.listen(PORT, '0.0.0.0');
 }
 

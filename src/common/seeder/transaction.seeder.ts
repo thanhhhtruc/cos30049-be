@@ -3,7 +3,7 @@ import { client } from '../seeder/seeder';
 import { map } from 'bluebird';
 import { generateCryptoTransactionData } from './transaction.util';
 
-export const seedTransactions = async (count: number = 100) => {
+export const seedTransactions = async (count: number = 1000) => {
   console.log(`💸 Seeding transactions...`);
 
   // .map can cause errors since transactions run concurrently and they are interdependent
