@@ -4,6 +4,10 @@ import { seedCurrencies } from './currency.seeder';
 import { seedExchangeRates } from './exchange-rate.seeder';
 import { seedWallets } from './wallet.seeder';
 import { seedTransactions } from './transaction.seeder';
+import {
+  seedNodesAsWallets,
+  seedRelationshipsAsTransactions,
+} from './csv-data.seeder';
 
 export const client = createClient();
 
@@ -27,8 +31,10 @@ async function seed() {
     await seedUsers();
     await seedCurrencies();
     await seedExchangeRates();
-    await seedWallets();
-    await seedTransactions();
+    // await seedWallets();
+    // await seedTransactions();
+    await seedNodesAsWallets();
+    await seedRelationshipsAsTransactions();
 
     console.timeEnd('⏱️ Seed time');
     console.log('✅ Seed completed!');
@@ -39,7 +45,11 @@ async function seed() {
 }
 
 // Run the seed
-seed().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});
+seed()
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await client.close();
+  });

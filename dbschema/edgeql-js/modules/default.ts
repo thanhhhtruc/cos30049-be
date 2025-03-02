@@ -49,7 +49,6 @@ export type $TransactionλShape = $.typeutil.flatten<_std.$Object_8ce8c71ee4fa5f
   "destinationWallet": $.LinkDesc<$Wallet, $.Cardinality.One, {}, false, false,  false, false>;
   "sourceWallet": $.LinkDesc<$Wallet, $.Cardinality.One, {}, false, false,  false, false>;
   "hash": $.PropertyDesc<_std.$str, $.Cardinality.One, true, false, false, false>;
-  "value": $.PropertyDesc<_std.$float64, $.Cardinality.One, false, false, false, false>;
   "blockHash": $.PropertyDesc<_std.$str, $.Cardinality.One, false, false, false, false>;
   "blockNumber": $.PropertyDesc<_std.$int64, $.Cardinality.One, false, false, false, false>;
   "blockTimestamp": $.PropertyDesc<_std.$datetime, $.Cardinality.One, false, false, false, false>;
@@ -59,6 +58,7 @@ export type $TransactionλShape = $.typeutil.flatten<_std.$Object_8ce8c71ee4fa5f
   "input": $.PropertyDesc<_std.$str, $.Cardinality.One, false, false, false, false>;
   "transactionFee": $.PropertyDesc<_std.$float64, $.Cardinality.One, false, false, false, false>;
   "transactionIndex": $.PropertyDesc<_std.$int64, $.Cardinality.One, false, false, false, false>;
+  "value": $.PropertyDesc<_std.$bigint, $.Cardinality.One, false, false, false, false>;
 }>;
 type $Transaction = $.ObjectType<"default::Transaction", $TransactionλShape, null, [
   ..._std.$Object_8ce8c71ee4fa5f73840c22d7eaa58588['__exclusives__'],

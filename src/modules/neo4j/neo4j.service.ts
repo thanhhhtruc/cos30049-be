@@ -1,6 +1,12 @@
 import { Injectable, OnApplicationShutdown, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import neo4j, { Driver, Session, QueryResult, ManagedTransaction, Config } from 'neo4j-driver';
+import neo4j, {
+  Driver,
+  Session,
+  QueryResult,
+  ManagedTransaction,
+  Config,
+} from 'neo4j-driver';
 
 @Injectable()
 export class Neo4jService implements OnApplicationShutdown {
@@ -9,9 +15,10 @@ export class Neo4jService implements OnApplicationShutdown {
 
   constructor(private readonly configService: ConfigService) {
     const uri = this.configService.get<string>('NEO4J_URI');
-    const username = this.configService.get<string>('NEO4J_USERNAME') || 'neo4j';
+    const username =
+      this.configService.get<string>('NEO4J_USERNAME') || 'neo4j';
     const password = this.configService.get<string>('NEO4J_PASSWORD') || '';
-    
+
     const config: Config = {
       maxTransactionRetryTime: 60000,
       maxConnectionPoolSize: 50,
@@ -20,20 +27,22 @@ export class Neo4jService implements OnApplicationShutdown {
       maxConnectionLifetime: 60 * 60 * 1000, // 1 hour
       logging: {
         level: 'info',
-        logger: (level, message) => this.logger.log(`[Neo4j] ${level}: ${message}`)
-      }
+        logger: (level, message) =>
+          this.logger.log(`[Neo4j] ${level}: ${message}`),
+      },
     };
-    
 
     if (!uri || !password) {
-      throw new Error('Neo4j connection details are not properly configured. Please check your environment variables.');
+      throw new Error(
+        'Neo4j connection details are not properly configured. Please check your environment variables.',
+      );
     }
 
     try {
       this.driver = neo4j.driver(
         uri,
         neo4j.auth.basic(username, password),
-        config
+        config,
       );
       this.verifyConnectivity();
       this.logger.log(`Neo4j connection established to ${uri}`);
@@ -63,20 +72,25 @@ export class Neo4jService implements OnApplicationShutdown {
         await this.driver.verifyConnectivity();
         return;
       } catch (error) {
-        this.logger.warn(`Connection attempt ${i + 1} failed: ${error.message}`);
+        this.logger.warn(
+          `Connection attempt ${i + 1} failed: ${error.message}`,
+        );
         if (i === retries - 1) {
-          this.logger.error(`All connection attempts failed after ${retries} retries`, error);
+          this.logger.error(
+            `All connection attempts failed after ${retries} retries`,
+            error,
+          );
           throw new Error(`Neo4j connection failed: ${error.message}`);
         }
         this.logger.warn(`Retrying in ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
   }
 
   async read(
     query: string,
-    parameters?: Record<string, any>
+    parameters?: Record<string, any>,
   ): Promise<QueryResult> {
     const session: Session = this.driver.session({
       database: this.configService.get<string>('neo4j.database') || 'neo4j',
@@ -97,7 +111,7 @@ export class Neo4jService implements OnApplicationShutdown {
 
   async write(
     query: string,
-    parameters?: Record<string, any>
+    parameters?: Record<string, any>,
   ): Promise<QueryResult> {
     const session: Session = this.driver.session({
       database: this.configService.get<string>('neo4j.database') || 'neo4j',
@@ -117,10 +131,10 @@ export class Neo4jService implements OnApplicationShutdown {
   }
 
   async executeTransaction(
-    transactionWork: (tx: ManagedTransaction) => Promise<any>
+    transactionWork: (tx: ManagedTransaction) => Promise<any>,
   ): Promise<any> {
     const session = this.driver.session({
-      database: this.configService.get<string>('neo4j.database') || 'neo4j'
+      database: this.configService.get<string>('neo4j.database') || 'neo4j',
     });
     try {
       const result = await session.executeWrite(transactionWork);
@@ -134,6 +148,4 @@ export class Neo4jService implements OnApplicationShutdown {
       await session.close();
     }
   }
-
-  
 }

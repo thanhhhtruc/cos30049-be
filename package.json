@@ -15,6 +15,7 @@
     "db:migrate": "edgedb migration create && edgedb migrate && pnpm run db:generate",
     "db:generate": "npx @edgedb/generate edgeql-js && npx @edgedb/generate interfaces",
     "db:seed": "ts-node -r tsconfig-paths/register src/common/seeder/seeder.ts",
+    "db:csv-seed": "ts-node -r tsconfig-paths/register src/common/seeder/csv-data.seeder.ts",
     "db:import": "ts-node -r tsconfig-paths/register src/scripts/import-neo4j.ts"
   },
   "dependencies": {
@@ -34,6 +35,7 @@
     "bluebird": "^3.7.2",
     "class-transformer": "^0.5.1",
     "cookie-parser": "^1.4.7",
+    "csv-parse": "^5.6.0",
     "edgedb": "^1.5.12",
     "neo4j-driver": "^5.28.1",
     "nest-neo4j": "^0.3.1",

@@ -6,7 +6,7 @@ import { PaginationMetadata } from 'src/common/pagination/pagination.dto';
 export class TransactionDto {
   id: string;
 
-  value: number;
+  value: bigint;
 
   hash: string;
 
@@ -57,7 +57,7 @@ export class GetWalletTransactionsInput {
   createdAtOrder?: TransactionOrderBy;
 }
 
-export class GetWalletTransactionsOuput {
+export class GetWalletTransactionsOutput {
   transactions: TransactionDto[];
   metadata: PaginationMetadata;
 }

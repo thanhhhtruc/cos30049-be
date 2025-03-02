@@ -13,7 +13,7 @@ import {
 } from './wallet.dto';
 import {
   GetWalletTransactionsInput,
-  GetWalletTransactionsOuput,
+  GetWalletTransactionsOutput,
   TransactionType,
 } from '../transaction/transaction.dto';
 import { TransactionService } from '../transaction/transaction.service';
@@ -26,7 +26,7 @@ export class WalletController {
     private readonly transactionService: TransactionService,
   ) {}
 
-  @Get()
+  @Get() // GET /wallets
   @ApiQuery({ name: 'query', required: false })
   @ApiGetResponse(GetWalletsOutput, 'All matching wallets found')
   @ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR)
@@ -56,7 +56,10 @@ export class WalletController {
   @Get(':address/transactions')
   // Adding ApiQuery due to this issue: https://github.com/nestjs/swagger/issues/30
   @ApiQuery({ name: 'type', enum: TransactionType, required: false })
-  @ApiGetResponse(GetWalletTransactionsOuput, 'All matching transactions found')
+  @ApiGetResponse(
+    GetWalletTransactionsOutput,
+    'All matching transactions found',
+  )
   @ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR)
   @ApiOperation({
     summary: 'Get a wallet transactions based on the input address',

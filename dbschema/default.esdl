@@ -58,7 +58,7 @@ module default {
     required property hash -> str {
       constraint exclusive;
     };
-    required property value -> float64;  # amount in its currency
+    required property value -> bigint;  # amount in its currency
     
     required sourceWallet: Wallet;
     required destinationWallet: Wallet;

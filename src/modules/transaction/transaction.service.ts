@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import e, { EdgeDBService } from '../edgedb/edgedb.service';
-import { GetWalletTransactionsOuput, TransactionType } from './transaction.dto';
+import {
+  GetWalletTransactionsOutput,
+  TransactionType,
+} from './transaction.dto';
 import { PaginationMetadata } from 'src/common/pagination/pagination.dto';
 
 @Injectable()
@@ -23,7 +26,7 @@ export class TransactionService {
     transactionHash?: string;
     dstAddress?: string;
     createdAtOrder?: 'ASC' | 'DESC';
-  }): Promise<GetWalletTransactionsOuput> {
+  }): Promise<GetWalletTransactionsOutput> {
     const walletQuery = e.select(e.Wallet, () => ({
       ...e.Wallet['*'],
       filter_single: { address },

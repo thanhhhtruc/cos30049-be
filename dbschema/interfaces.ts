@@ -90,7 +90,6 @@ export namespace $default {
     "destinationWallet": Wallet;
     "sourceWallet": Wallet;
     "hash": string;
-    "value": number;
     "blockHash": string;
     "blockNumber": number;
     "blockTimestamp": Date;
@@ -100,6 +99,7 @@ export namespace $default {
     "input": string;
     "transactionFee": number;
     "transactionIndex": number;
+    "value": bigint;
   }
   export interface User extends std.$Object {
     "address"?: string | null;
