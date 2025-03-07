@@ -49,9 +49,6 @@ lerna-debug.log*
 # credentials
 credentials
 
-# github
-.github
-
 # Runtime data
 pids
 *.pid
@@ -64,3 +61,9 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Ignore EdgeDB schema generated queries
 dbschema/edgeql-js
+
+# Ignore Cursor
+.cursorignore
+.cursorrules
+.cursor
+/cursor_tmp
