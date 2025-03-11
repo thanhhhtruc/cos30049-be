@@ -60,8 +60,8 @@ export class Neo4jController {
           w.addressId as address, 
           w.type as walletType,
           labels(w) as type,
-          txCount`, 
-          { normalizedAddress },
+          txCount`,
+        { normalizedAddress },
       );
 
       const record = result.records[0];
@@ -119,30 +119,35 @@ export class Neo4jController {
         ),
       ]);
 
-      const neighbors = neighborsResult.records ? neighborsResult.records.map((record) => ({
-        address: record.get('address'),
-        type: record.get('type'),
-        transactionCount: record.get('txCount').toNumber(),
-      })) : [];
+      const neighbors = neighborsResult.records
+        ? neighborsResult.records.map((record) => ({
+            address: record.get('address'),
+            type: record.get('type'),
+            transactionCount: record.get('txCount').toNumber(),
+          }))
+        : [];
 
-      const transactions = transactionsResult.records ? transactionsResult.records.map((record) => {
-        const tx = record.get('tx').properties;
-        return {
-          hash: tx.hash,
-          value: tx.value || '0',
-          sourceAddress: address,
-          destinationAddress: record.get('destAddress'),
-          blockTimestamp: tx.block_timestamp,
-          blockNumber: tx.block_number,
-          blockHash: tx.block_hash,
-          gas: tx.gas,
-          gasUsed: tx.gas_used,
-          gasPrice: tx.gas_price,
-          transactionFee: tx.transaction_fee,
-        };
-      }) : [];
+      const transactions = transactionsResult.records
+        ? transactionsResult.records.map((record) => {
+            const tx = record.get('tx').properties;
+            return {
+              hash: tx.hash,
+              value: tx.value || '0',
+              sourceAddress: address,
+              destinationAddress: record.get('destAddress'),
+              blockTimestamp: tx.block_timestamp,
+              blockNumber: tx.block_number,
+              blockHash: tx.block_hash,
+              gas: tx.gas,
+              gasUsed: tx.gas_used,
+              gasPrice: tx.gas_price,
+              transactionFee: tx.transaction_fee,
+            };
+          })
+        : [];
 
       return { neighbors, transactions };
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (error) {
       throw new HttpException(
         {

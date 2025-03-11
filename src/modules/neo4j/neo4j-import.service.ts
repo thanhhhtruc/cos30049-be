@@ -10,7 +10,9 @@ export class Neo4jImportService {
 
   constructor(private readonly neo4jService: Neo4jService) {}
 
-  private async parseCsvFile(filePath: string): Promise<Record<string, string>[]> {
+  private async parseCsvFile(
+    filePath: string,
+  ): Promise<Record<string, string>[]> {
     if (!fs.existsSync(filePath)) {
       this.logger.error(`CSV file not found: ${filePath}`);
       throw new Error(`CSV file not found: ${filePath}`);
@@ -22,13 +24,22 @@ export class Neo4jImportService {
         fs.createReadStream(filePath)
           .pipe(parse({ columns: true, skip_empty_lines: true }))
           .on('data', (data: Record<string, string>) => {
-            if (Object.values(data).some(value => value === undefined || value === null)) {
-              this.logger.warn('Found row with undefined or null values:', data);
+            if (
+              Object.values(data).some(
+                (value) => value === undefined || value === null,
+              )
+            ) {
+              this.logger.warn(
+                'Found row with undefined or null values:',
+                data,
+              );
             }
             results.push(data);
           })
           .on('end', () => {
-            this.logger.debug(`Successfully parsed ${results.length} rows from ${filePath}`);
+            this.logger.debug(
+              `Successfully parsed ${results.length} rows from ${filePath}`,
+            );
             resolve(results);
           })
           .on('error', (error: Error) => {
@@ -45,7 +56,7 @@ export class Neo4jImportService {
   private async createConstraints() {
     const constraints = [
       'CREATE CONSTRAINT addressId_Source_uniq IF NOT EXISTS FOR (n:Source) REQUIRE (n.addressId) IS UNIQUE',
-      'CREATE CONSTRAINT addressId_Destination_uniq IF NOT EXISTS FOR (n:Destination) REQUIRE (n.addressId) IS UNIQUE'
+      'CREATE CONSTRAINT addressId_Destination_uniq IF NOT EXISTS FOR (n:Destination) REQUIRE (n.addressId) IS UNIQUE',
     ];
 
     for (const constraint of constraints) {
@@ -57,7 +68,7 @@ export class Neo4jImportService {
   async importWallets(csvFilePath: string) {
     await this.createConstraints();
     const wallets = await this.parseCsvFile(csvFilePath);
-    
+
     const sourceQuery = `
       CALL {
         WITH $batch as batch
@@ -80,7 +91,9 @@ export class Neo4jImportService {
 
     await this.neo4jService.write(sourceQuery, { batch: wallets });
     await this.neo4jService.write(destQuery, { batch: wallets });
-    this.logger.log(`Imported ${wallets.length} wallets as Source and Destination nodes`);
+    this.logger.log(
+      `Imported ${wallets.length} wallets as Source and Destination nodes`,
+    );
   }
 
   async importTransactions(csvFilePath: string) {
@@ -121,7 +134,7 @@ export class Neo4jImportService {
       console.time('Import time');
 
       await this.clearDatabase();
-      
+
       await this.importWallets(path.join(dataDir, 'nodes.csv'));
       await this.importTransactions(path.join(dataDir, 'relationships.csv'));
 

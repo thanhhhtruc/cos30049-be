@@ -14,9 +14,9 @@
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
     "db:migrate": "edgedb migration create && edgedb migrate && pnpm run db:generate",
     "db:generate": "npx @edgedb/generate edgeql-js && npx @edgedb/generate interfaces",
-    "db:seed": "ts-node -r tsconfig-paths/register src/common/seeder/seeder.ts",
-    "db:csv-seed": "ts-node -r tsconfig-paths/register src/common/seeder/csv-data.seeder.ts",
-    "db:import": "ts-node -r tsconfig-paths/register src/scripts/import-neo4j.ts"
+    "db:edgedb-seed": "ts-node -r tsconfig-paths/register src/common/seeder/seeder.ts",
+    "db:csv-seed": "ts-node -r tsconfig-paths/register src/common/seeder/csv-data.seeder.ts && pnpm run db:neo4j-seed",
+    "db:neo4j-seed": "ts-node -r tsconfig-paths/register src/common/seeder/neo4j.seeder.ts"
   },
   "dependencies": {
     "@nestjs/axios": "^3.1.3",

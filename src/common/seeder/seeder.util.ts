@@ -75,7 +75,6 @@ export function generateRandomString(length: number, chars: string): string {
   return result;
 }
 
-
 export function generateCryptoAddress(symbol: string): string {
   switch (symbol) {
     case 'BTC':
