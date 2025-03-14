@@ -19,6 +19,6 @@ echo "
 "
 
 export EDGEDB_BRANCH=$BRANCH
-pnpm run db:seed
+pnpm run db:edgedb-seed
 
 echo "🚀 Running seeding with instance: ${EDGEDB_INSTANCE}"
