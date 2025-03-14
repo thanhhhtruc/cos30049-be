@@ -22,7 +22,7 @@ async function clearDatabase() {
 }
 
 async function seed() {
-  console.log('EDGEDB Seeding')
+  console.log('EDGEDB Seeding');
   console.log('🌱 Starting seed...');
   console.time('⏱️ Seed time');
 
@@ -31,8 +31,8 @@ async function seed() {
     await seedUsers();
     await seedCurrencies();
     await seedExchangeRates();
-    // await seedWallets();
-    // await seedTransactions();
+    await seedWallets();
+    await seedTransactions();
     await seedNodesAsWallets();
     await seedRelationshipsAsTransactions();
 

@@ -11,6 +11,7 @@ export class Neo4jModule {
     return {
       module: Neo4jModule,
       imports: [ConfigModule],
+      controllers: [Neo4jController],
       providers: [
         {
           provide: Neo4jService,
@@ -20,10 +21,10 @@ export class Neo4jModule {
           inject: [ConfigService],
         },
         Neo4jConstraintsInitializer,
-        Neo4jImportService
+        Neo4jImportService,
       ],
       exports: [Neo4jService, Neo4jImportService],
-      global: true // Make the module global
+      global: true, // Make the module global
     };
   }
 }

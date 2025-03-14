@@ -156,7 +156,7 @@ export async function seedRelationshipsAsTransactions() {
                   transaction.to_address,
                 ),
               })),
-              value: transaction.value,
+              value: transaction.value.toString(),
               input: transaction.input,
               transactionIndex: transaction.transaction_index,
               gas: transaction.gas,

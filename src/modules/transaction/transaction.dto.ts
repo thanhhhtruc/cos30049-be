@@ -6,7 +6,7 @@ import { PaginationMetadata } from 'src/common/pagination/pagination.dto';
 export class TransactionDto {
   id: string;
 
-  value: bigint;
+  value: string;
 
   hash: string;
 

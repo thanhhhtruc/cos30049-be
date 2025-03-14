@@ -8,55 +8,49 @@ export class Neo4jTransactionService {
   async fetchGraphData(address?: string) {
     try {
       const nodesQuery = `
-        MATCH (w:Wallet)-[:HAS_CURRENCY]->(c:Currency)
-        ${address ? 'WHERE w.address = $address' : ''}
-        WITH DISTINCT w, c
-        RETURN w, c
+        MATCH (w)
+        WHERE w:Source OR w:Destination
+        ${address ? 'WHERE w.addressId = $address' : ''}
+        RETURN DISTINCT w
         ${!address ? 'LIMIT 50' : ''}
       `;
 
       const relationshipsQuery = `
-        MATCH (w:Wallet ${address ? '{address: $address}' : ''})
-        MATCH path=(source:Wallet)-[:SENT]->(tx:Transaction)-[:RECEIVED]->(dest:Wallet)
+        MATCH (w)
+        WHERE (w:Source OR w:Destination)
+        ${address ? 'AND w.addressId = $address' : ''}
+        WITH w
+        MATCH (source:Source)-[tx:Transaction]->(dest:Destination)
         WHERE source = w OR dest = w
-        WITH source, tx, dest, path
-        ORDER BY tx.blockTimestamp DESC
-        ${!address ? 'LIMIT 100' : ''}
-        WITH COLLECT(path) as paths
-        UNWIND paths as p
-        WITH DISTINCT relationships(p) as rels, nodes(p) as nodes
-        UNWIND rels as rel
-        WITH DISTINCT rel as tx, nodes as wallets
-        MATCH (source:Wallet)-[:SENT]->(tx)-[:RECEIVED]->(dest:Wallet)
+        WITH DISTINCT source, tx, dest
         RETURN source, tx, dest
+        ${!address ? 'LIMIT 100' : ''}
       `;
 
     const [nodesResult, relationshipsResult] = await Promise.all([
-      this.neo4jService.read(nodesQuery),
-      this.neo4jService.read(relationshipsQuery)
+      this.neo4jService.read(nodesQuery, address ? { address } : {}),
+      this.neo4jService.read(relationshipsQuery, address ? { address } : {})
     ]);
 
-    const nodes = nodesResult.records.map(record => ({
-      id: record.get('w').properties.address,
-      address: record.get('w').properties.address,
-      type: 'wallet',
-      data: {
-        address: record.get('w').properties.address,
-        balance: record.get('w').properties.balance,
-        type: 'wallet',
-        currency: {
-          type: record.get('c').properties.type,
-          symbol: 'ETH',
-          iconImg: null
+    const nodes = nodesResult.records.map(record => {
+      const node = record.get('w').properties;
+      const type = node.type;
+      return {
+        id: node.addressId,
+        address: node.addressId,
+        type: type,
+        data: {
+          address: node.addressId,
+          type: type
         }
-      }
-    }));
+      };
+    });
 
     const relationships = relationshipsResult.records.map(record => ({
-      source: record.get('source').properties.address,
-      target: record.get('dest').properties.address,
+      source: record.get('source').properties.addressId,
+      target: record.get('dest').properties.addressId,
       value: record.get('tx').properties.value,
-      timestamp: record.get('tx').properties.blockTimestamp,
+      timestamp: record.get('tx').properties.block_timestamp,
       hash: record.get('tx').properties.hash
     }));
 
