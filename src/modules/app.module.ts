@@ -17,7 +17,7 @@ const FEATURE_MODULES = [
   AuthModule,
   WalletModule,
   TransactionModule,
-  Neo4jModule
+  Neo4jModule,
 ];
 const SHARED_MODULES = [
   ConfigModule.forRoot({

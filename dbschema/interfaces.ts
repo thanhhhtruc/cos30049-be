@@ -99,7 +99,7 @@ export namespace $default {
     "input": string;
     "transactionFee": number;
     "transactionIndex": number;
-    "value": bigint;
+    "value": string;
   }
   export interface User extends std.$Object {
     "address"?: string | null;
