@@ -10,6 +10,7 @@ import {
   GetWalletsInput,
   GetWalletsOutput,
   WalletDto,
+  WalletNetwork,
 } from './wallet.dto';
 import {
   GetWalletTransactionsInput,
@@ -91,5 +92,26 @@ export class WalletController {
     type?: TransactionType,
   ) {
     return this.walletService.getWalletNeighbors({ address, type });
+  }
+
+  @Get(':address/network')
+  @ApiGetResponse(WalletNetwork, 'Wallet network found')
+  @ApiErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ApiOperation({ summary: 'Get a wallet network based on the input address' })
+  @ApiQuery({ name: 'type', enum: TransactionType, required: false })
+  @ApiQuery({ name: 'depth', required: false })
+  @ApiQuery({ name: 'maxWallets', required: false })
+  async getWalletNetwork(
+    @Param('address') address: string,
+    @Query('type') type?: TransactionType,
+    @Query('depth') depth?: number,
+    @Query('maxWallets') maxWallets?: number,
+  ) {
+    return this.walletService.getWalletNetwork({
+      address,
+      type,
+      depth,
+      maxWallets,
+    });
   }
 }

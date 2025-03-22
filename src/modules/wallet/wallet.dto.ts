@@ -30,3 +30,30 @@ export class GetWalletDetailsOutput {
   recentTransactions: TransactionDto[];
   firstTransaction: TransactionDto | null;
 }
+
+export class WalletNetworkNode {
+  address: string;
+  wallet: WalletDto;
+  level: number; // distance from root
+  position?: {
+    x: number;
+    y: number;
+  };
+  direction?: 'incoming' | 'outgoing' | 'both'; // relationship direction
+  parent?: string; // parent node address
+}
+
+export class WalletNetworkEdge {
+  source: string; // wallet address
+  target: string; // wallet address
+  direction?: 'incoming' | 'outgoing' | 'both'; // relationship direction
+  transactionCount?: number;
+  totalTransactionValue?: number;
+  totalGasUsed?: number;
+}
+
+export class WalletNetwork {
+  rootAddress: string;
+  nodes: WalletNetworkNode[];
+  edges: WalletNetworkEdge[];
+}

@@ -9,7 +9,7 @@ export const seedWallets = async (
   maxBalance: number = 1000,
   // Minimum 2 wallets per currency
   // to ensure that we have enough wallets to transact between them
-  maxWalletsPerCurrency = 20,
+  maxWalletsPerCurrency = 10,
 ) => {
   const cryptoCurrencies = await e
     .select(e.Currency, () => ({

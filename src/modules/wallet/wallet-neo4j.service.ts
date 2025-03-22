@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { Neo4jService } from '../neo4j/neo4j.service';
-import { 
+import {
   WalletDto,
   GetWalletDetailsOutput,
   GetWalletsOutput,
-  GetWalletsInput
+  GetWalletsInput,
 } from './wallet.dto';
 import { TransactionType } from '../transaction/transaction.dto';
 import { PaginationMetadata } from 'src/common/pagination/pagination.dto';
@@ -64,28 +64,37 @@ export class WalletService {
       RETURN tx, source, dest
     `;
 
-    const [walletResult, recentTransactionsResult, firstTransactionResult] = await Promise.all([
-      this.neo4j.read(walletQuery, { address }),
-      this.neo4j.read(recentTransactionsQuery, { address }),
-      this.neo4j.read(firstTransactionQuery, { address })
-    ]);
+    const [walletResult, recentTransactionsResult, firstTransactionResult] =
+      await Promise.all([
+        this.neo4j.read(walletQuery, { address }),
+        this.neo4j.read(recentTransactionsQuery, { address }),
+        this.neo4j.read(firstTransactionQuery, { address }),
+      ]);
 
-    const wallet = walletResult.records.length ? {
-      ...walletResult.records[0].get('w').properties,
-      currency: walletResult.records[0].get('c').properties,
-    } : null;
+    const wallet = walletResult.records.length
+      ? {
+          ...walletResult.records[0].get('w').properties,
+          currency: walletResult.records[0].get('c').properties,
+        }
+      : null;
 
-    const recentTransactions = recentTransactionsResult.records.map(record => ({
-      ...record.get('tx').properties,
-      sourceWallet: record.get('source').properties,
-      destinationWallet: record.get('dest').properties,
-    }));
+    const recentTransactions = recentTransactionsResult.records.map(
+      (record) => ({
+        ...record.get('tx').properties,
+        sourceWallet: record.get('source').properties,
+        destinationWallet: record.get('dest').properties,
+      }),
+    );
 
-    const firstTransaction = firstTransactionResult.records.length ? {
-      ...firstTransactionResult.records[0].get('tx').properties,
-      sourceWallet: firstTransactionResult.records[0].get('source').properties,
-      destinationWallet: firstTransactionResult.records[0].get('dest').properties,
-    } : null;
+    const firstTransaction = firstTransactionResult.records.length
+      ? {
+          ...firstTransactionResult.records[0].get('tx').properties,
+          sourceWallet:
+            firstTransactionResult.records[0].get('source').properties,
+          destinationWallet:
+            firstTransactionResult.records[0].get('dest').properties,
+        }
+      : null;
 
     return {
       wallet,
@@ -123,18 +132,18 @@ export class WalletService {
     ]);
 
     const total = countResult.records[0].get('total').toNumber();
-    
-    const wallets = walletsResult.records.map(record => ({
+
+    const wallets = walletsResult.records.map((record) => ({
       ...record.get('w').properties,
       currency: record.get('c').properties,
     }));
 
     return {
       wallets,
-      metadata: new PaginationMetadata({ 
+      metadata: new PaginationMetadata({
         page,
         limit,
-        total
+        total,
       }),
     };
   }
@@ -176,7 +185,7 @@ export class WalletService {
 
     const result = await this.neo4j.read(query, { address });
 
-    return result.records.map(record => ({
+    return result.records.map((record) => ({
       ...record.get('wallet').properties,
       currency: record.get('c').properties,
     }));
